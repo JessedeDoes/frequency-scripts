@@ -24,7 +24,7 @@ def relative(freqs):
     relfreqs = {}
     total = sum(freqs.values())
     for k in freqs.keys():
-        relfreqs[k] = freqs[k] / total
+        relfreqs[k] = 100 * freqs[k] / total
     return relfreqs
     
     
@@ -45,7 +45,7 @@ pos_mapping = {
 
 def pos_mapped(p):
     pos_head = re.sub("[^A-Za-z].*", "", p)
-    print(f"{p} {pos_head}")
+    #print(f"{p} {pos_head}")
     if pos_head in pos_mapping:
         m = pos_mapping[pos_head]
         if re.match("n.*eigen.*|spec.*deelei.*", p):
@@ -119,7 +119,7 @@ def download_frequency_list(base_url, index_name, ANNOTATION, chunk_size, output
 
             if newInfo and (max is None or not start > max): 
                 for x in list(freqs.keys()):
-                    print(x)
+                    #print(x)
                     #csvfile.write(f"{x},{freqs[x]}\n")
                     
                     allKeys[x]  = freqs[x]
@@ -153,7 +153,7 @@ def plot_frequencies(csv_file):
     plt.savefig(pdf_file, format="pdf", bbox_inches="tight")
     #plt.show()
 
-def plot_frequencies_with_zipf(csv_file,n, words_only=False):
+def plot_frequencies_with_zipf(csv_file,n, words_only=False,printit=False):
     """Plots word frequencies from a CSV file and fits a Zipf curve."""
     import numpy as np
     from scipy.optimize import curve_fit
@@ -177,7 +177,16 @@ def plot_frequencies_with_zipf(csv_file,n, words_only=False):
 
     # Sort frequencies in descending order
     sorted_frequencies = sorted(frequencies, reverse=True)[:n] # maar woorden niet....
+
+
     sorted_words = sorted(words, key=freqs.get, reverse=True)
+
+    if printit:
+      for x in zip(sorted_words,sorted_frequencies):
+        wrd = x[0]
+        f = x[1]
+        print(f"{wrd}\t{f:.2f}")
+
     ranks = np.arange(1, len(sorted_frequencies) + 1)
 
     # Fit Zipf's law curve
@@ -205,10 +214,10 @@ if __name__ == "__main__":
     OUTPUT_CSV="Data/pos-frequencies.csv"
     
     download_frequency_list(BASE_URL, INDEX_NAME, "pos", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=pos_mapped)
-    plot_frequencies_with_zipf(OUTPUT_CSV,1000)
+    plot_frequencies_with_zipf(OUTPUT_CSV,1000,printit=True)
 
 
     OUTPUT_CSV="Data/word-frequencies.csv"
-    download_frequency_list(BASE_URL, INDEX_NAME, "word", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=None)
-    plot_frequencies_with_zipf(OUTPUT_CSV,50,words_only=True)
+    #download_frequency_list(BASE_URL, INDEX_NAME, "word", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=None)
+    #plot_frequencies_with_zipf(OUTPUT_CSV,50,words_only=True)
    

@@ -93,8 +93,8 @@ def verify_heaps_law(blacklab_url, total_sentences=10000,sample_percentage=None,
     # Plotting 
     plt.figure(figsize=(10, 6))
 
-    plt.plot(range(1, len(ttr_curve) + 1), ttr_curve, label="Type Count Curve")
-    plt.plot(range(1, len(ttr_curve) + 1), fitted_values, color="red", linestyle="--", label=f"Fitted Heap Curve (k={k:.2f}, β={beta:.2f})")
+    plt.plot(range(1, len(ttr_curve) + 1), ttr_curve, label="Aantal types")
+    plt.plot(range(1, len(ttr_curve) + 1), fitted_values, color="red", linestyle="--", label=f"Best passende Heaps-curve (k={k:.2f}, β={beta:.2f})")
     
     
     plt.xlabel("Omvang sample")
