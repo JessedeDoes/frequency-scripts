@@ -153,15 +153,20 @@ def plot_frequencies(csv_file):
     plt.savefig(pdf_file, format="pdf", bbox_inches="tight")
     #plt.show()
 
-def plot_frequencies_with_zipf(csv_file,n, words_only=False,printit=False):
+def zipf_law(rank, k):
+        """Zipf's law formula: frequency = k / rank."""
+        return k / rank
+
+def zipf_law_alpha(rank, k, alpha, beta):
+        """Zipf's law formula: frequency = k / rank."""
+        return k / (rank + beta) ** alpha
+
+def plot_frequencies_with_zipf(csv_file,n, words_only=False,printit=False,extended=False):
     """Plots word frequencies from a CSV file and fits a Zipf curve."""
     import numpy as np
     from scipy.optimize import curve_fit
     import matplotlib.pyplot as plt
 
-    def zipf_law(rank, k):
-        """Zipf's law formula: frequency = k / rank."""
-        return k / rank
 
     words = []
     frequencies = []
@@ -191,12 +196,23 @@ def plot_frequencies_with_zipf(csv_file,n, words_only=False,printit=False):
 
     # Fit Zipf's law curve
     popt, _ = curve_fit(zipf_law, ranks, sorted_frequencies)
-    fitted_frequencies = zipf_law(ranks, *popt)
+    k0 = popt[0]
 
+
+    fitted_frequencies = zipf_law(ranks, *popt)
+    if extended:
+        popt_alpha_beta, _ = curve_fit(zipf_law_alpha, ranks, sorted_frequencies,p0=[k0,1,2.7])
+        fitted_frequencies_ab = zipf_law_alpha(ranks, *popt_alpha_beta)
+    
     plt.figure(figsize=(10, 6))
     plt.bar(sorted_words[:n], sorted_frequencies, color="blue", label="Frequenties in corpus")  # Plot top n words
-    k = popt[0] 
-    plt.plot(sorted_words[:n], fitted_frequencies, color="red", linestyle="--", label=f"Zipf-curve, k={k:.2f}")
+    if not extended:
+        k = popt[0] 
+        plt.plot(sorted_words[:n], fitted_frequencies, color="red", linestyle="--", label=f"Zipf-curve, k={k:.2f}")
+    else:
+        [k1,a1,b1] = popt_alpha_beta
+        plt.plot(sorted_words[:n], fitted_frequencies_ab, color="red", linestyle="--", label=f"Zipf-Mandelbrot-curve, k={k1:.2f}, a={a1:.2f}, b={b1:.2f}")
+
 
     plt.xlabel("Woorden")
     plt.ylabel("Frequenties")
@@ -213,11 +229,11 @@ if __name__ == "__main__":
         os.remove(OUTPUT_CSV)  # Remove existing CSV to start fresh
     OUTPUT_CSV="Data/pos-frequencies.csv"
     
-    download_frequency_list(BASE_URL, INDEX_NAME, "pos", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=pos_mapped)
-    plot_frequencies_with_zipf(OUTPUT_CSV,1000,printit=True)
+    #download_frequency_list(BASE_URL, INDEX_NAME, "pos", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=pos_mapped)
+    #plot_frequencies_with_zipf(OUTPUT_CSV,1000,printit=True)
 
 
     OUTPUT_CSV="Data/word-frequencies.csv"
-    #download_frequency_list(BASE_URL, INDEX_NAME, "word", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=None)
-    #plot_frequencies_with_zipf(OUTPUT_CSV,50,words_only=True)
+    download_frequency_list(BASE_URL, INDEX_NAME, "word", CHUNK_SIZE, OUTPUT_CSV,pos_mapping=None)
+    plot_frequencies_with_zipf(OUTPUT_CSV,50,words_only=True,extended=True)
    
